@@ -1,245 +1,195 @@
 =TEX
-\documentclass[11pt]{article}
+\documentclass{article}
 \usepackage[screen]{geometry}
-\usepackage{ProofPower,graphicx, color}
-\usepackage{amsmath, amssymb}
+\usepackage{ProofPower, verbatim, graphicx, color, amsmath, amssymb}
 \begin{document}
+\underscoreoff
 
-\title{CS113 Lab:1}
+\title{CS118 Lab:1}
 \author{Saw Thinkar Nay Htoo}
 \maketitle
-\section*{Purpose}
-To explore the tools to create documents with math symbols combined with programming and to learn about logic connectives used in propositional calculus. \footnote{lab1 second draft}
 
+
+\section*{Choosing a car}
+An algorithm is described to help select the best car based on overall cost related to fuel efficiency.
+\begin{description}
+\item[Inputs:] : purchase price and fuel efficiency (in mpg)
+\item[Process:] :\\
+total cost = purchase price + operating cost \\
+operating cost = years times annual fuel cost \\
+anuual fuel cost = price per gallon times the annual fuel consumed. 
+\item[Output:] total cost
+\end{description}
+\section*{analysis}
+Assuming (since the specification does not indicate it), the number of years will be 10. And then, if the inputs are 15,000 miles per year and gas costs \$3 per gallon. And the inputs are purchase price of \$25,000 and fuel efficiency is 45mpg. 
+\begin{description}
+\item[Inputs:] : purchase price and fuel efficiency (in mpg)
+\item[Process:] :\\
+total cost = 25000 + operating cost \\
+operating cost = 10 times annual fuel cost \\
+annual fuel cost = 3 times 15000/45.
+\item[Output:] total cost
+\end{description}
+\clearpage
+\section*{prototype SML code}
+=SML
+fun annual_fuel_consumed(ppg,mpy,mpg) = ppg*mpy div mpg;
+val ppg = 3; val mpy = 15000; val mpg = 45;
+val fuel = annual_fuel_consumed(ppg,mpy,mpg);
+val years = 10;
+fun operating_cost(fc) = years * fc;
+val cost = operating_cost(fuel);
+val pp = 25000;
+fun total_cost(oc) = pp + oc;
+val total = total_cost(cost);
+=TEX
+\clearpage
+\section*{Output from SML code}
+\verbatiminput{result}
+
+\clearpage
+\section*{C code implementation of the SML code}
+=DUMP lab1.c
+#include <stdio.h>
+
+int eax = 0;
+
+int annual_fuel_consumed(int ppg, int mpy, int mpg)
+	{return ppg * mpy/mpg;}
+int fuel; int cost; int total;
+
+#define years 10
+int operating_cost(int fc) { return years * fc; }
+#define pp 25000
+int total_cost(int oc) { return pp + oc; }
+
+#define ppg 3
+#define mpy 15000
+#define mpg 45
+int fuel; int cost; int total;
+=TEX
+\clearpage
+The output when running C program.
+=DUMPMORE lab.c
+int main()
+{
+	fuel = annual_fuel_consumed(ppg,mpy,mpg);
+	cost = operating_cost(fuel);
+	total = total_cost(cost);
+	printf("Total cost of car: %i\n",total);
+}
+\clearpage
+\section*{C code implementation of the SML code}
+=DUMP lab.c
+#include <stdio.h>
+int eax; int ebx; int ecx;
+int fuel; int cost; int total;
+
+//int annual_fuel_consumed(int ppg,int mpy,int mpg)
+//{return ppg* mpy/mpg;}
+
+void annual_fuel_consumed2()
+{eax = eax * ebx / ecx;}
+
+#define years 10
+int operating_cost(int fc) {return years * fc;}
+void operating_cost2() {eax = years * eax;}
+#define pp 25000
+int total_cost(int oc) {return pp + oc;}
+int total_cost2() {return pp+ eax;}
+#define ppg 3
+#define mpy 15000
+#define mpg 45
+int main()
+{
+	//fuel = annual_fuel_consumed(ppg,mpy,mpg);
+	eax = ppg;
+	ebx = mpy;
+	ecx = mpg;
+	fuel = annual_fuel_consumed2();
+	//cost = operating_cost(fuel);
+	eax = fuel;
+	//cost = operating_cost2();
+	operating_cost2(); //assume return value is in eax
+	//cost = eax;
+	//total = total_cost(cost);
+	//eax = cost;
+	total = total_cost2();
+	printf("Total cost of car: %i\n",total);
+	return 0;
+}
+=TEX
+The output when running the C program in the debugger is: 
+
+\begin{center}
+	\includegraphics{out1.png}
+\end{center}
+
+\clearpage
+\section*{Translation of C code to ASM code}
 \begin{itemize}
-
-\item
-The truth table value of $p \land q$.(Conjunction)\\
-\input and.tex
-\clearpage
-
-\item
-The truth table value of $p \lor q$.(Disjunction)\\
-\input or.tex
-
-
-\item
-The truth table value of $p \oplus q$.(Exclusive or)\footnote{Unnecessary "r" is removed from the truth table.}\\
-\input xor.tex
-
-\clearpage
-
-\item
-The truth table value of $\sim p$ and $\sim q$.(Negation)\footnote{Negation signs are changed from $\neg$ to $\sim$.}\\
-\input not1.tex
-\input not2.tex
-
+\item include statements (libraries like stdio)
+\item declare variables
+\item define functions
+\item symbolic constants (in C define) \\
+e.g. \verb|#define x 0 in C would be \verb|.equ x,0 in asm
+\item assignment statements
+\item call assembly language functions
+\item call C functions (printf) \\
+e.g. the call to printf: printf("Total cost of car: %i\n",total); in asm is:
+\begin{verbatim}  
+  push %eax\\
+  push $msg\\
+  call printf\\
+  add $8,%esp\\
+\end{verbatim}
+\item return from main function 
+\item arithmetic operations (addition, multiplication, integer division)
 \end{itemize}
+=DUMP lab1.s
+.equ ppg,3
+.equ mpy,15000
+.equ mpg,45
+.data
+  fuel: .long 0
+  total: .long 0
+  cost: .long 0
+msg: .string "fuel: %i\n"
+.text
+ annual_fuel_consumed:
+  mov $ppg,%eax
+  mov $mpy,%ebx
+  mul %ebx # edx:eax = eax * ebx
+  mov $mpg, %ecx
+  div %ecx # eax = edx:eax / ecx
 
-\noindent{ \color{red} \rule{\linewidth} {0.5mm} }
-\clearpage
+  push %eax
+  push $msg
+  call printf
+  add $8,%esp
+  
+ ret
+ .globl main
+main:
+ call annual_fuel_consumed
+ ret
 
-\section*{SML codes for conjuntion, disjunction, exclusive or and negation}
-=TEX
-SML code for conjunction. When the two values are True, the result is True. Otherwise the rest of the results are False.\footnote{Output results for SML codes are added and function names are changed to long form to reduce confusion.}
-=SML
-datatype Bool = F | T;
-fun conjunction(F,x) = F
- | conjunction(T,x) = x;
-conjunction(F,F);
-conjunction(T,F);
-conjunction(F,T);
-conjunction(T,T);
-val truth_values = [(F,F),(F,T),(T,F),(T,T)];
-map conjunction truth_values;
-=TEX
-\includegraphics[scale = 0.6]{con.png}
-\clearpage
-
-=TEX
-SML code for disjunction. When the two values are False, the output is False. The rest of the results are True.
-=SML
-datatype Bool = F | T;
-fun disjunction(F,F) = F
-| disjunction(T,x) = T
-| disjunction(x,T) = T;
-disjunction(F,F);
-disjunction(T,F);
-disjunction(F,T);
-disjunction(T,T);
-val truth_values = [(F,F),(F,T),(T,F),(T,T)];
-map disjunction truth_values;
-=TEX
-\includegraphics[scale=0.6]{dis.png}
-\clearpage
-
-=TEX
-SML code for exclusive or. When the values are the same, the output is False. When the values are different, the output is True.\\
-=SML
-datatype Bool = F | T;
-fun exclusive_or (T,T) = F
- | exclusive_or (F,F) = F
- | exclusive_or (x,y) = T;
-exclusive_or(F,F);
-exclusive_or(T,F);
-exclusive_or(F,T);
-exclusive_or(T,T);
-val truth_values = [(F,F),(F,T),(T,F),(T,T)];
-map exclusive_or truth_values;
-=TEX
-\includegraphics[scale=0.6]{xor.png}
-\clearpage
-
-=TEX
-SML code for negation. The values are reversed.\\
-=SML
-datatype Bool = F | T;
-fun negation T = F
- | negation F = T;
-negation (T);
-negation (F);
-val truth_values = [F,T];
-map negation truth_values;
-=TEX
-\includegraphics[scale=0.6]{neg.png}\\
-\noindent{ \color{red} \rule{\linewidth} {0.5mm} }
-\clearpage
 
 =TEX
 \clearpage
+\section*{Shell scripts to make processing easier}
+This shell script is used to make extracting and processing the source code easier. The -g option to the gcc compiler adds debugging symbols so we can refer to variables even though they are not normally stored in the object code. 
+=DUMP labcode.sh
+docsml lab1.doc
+gcc -Wall -g -o lab1c lab1.c
+=DUMP labdoc.sh
+doctex lab1.doc
+pptexenv pdflatex lab1.tex
+=SH
+chmod 755 labcode.sh
+chmod 755 labdoc.sh
 
-\section*{Problem 1.18}
-Show that $p \oplus q \equiv (p \lor q) \land \sim (p \land q)$. \footnote{Negation signs are changed from $\neg$ to $\sim$.}\\
-\begin{enumerate}
-\item 
-Left hand side 
-\input xor2.tex 
-
-\item
-Right hand side 
-\input test1.tex 
-
-\item
-LHS = RHS (Hence shown)
-\end{enumerate} 
-\clearpage
-
-This is the result created by inputting the entire equation into the truth table generator.\footnote{Negation signs are changed from $\neg$ to $\sim$. Table is created again with details.}
-\input 118.tex
-
+poly < lab1.sml > result
 =TEX
-section*{SML code for 1.18}\footnote{Function names are changed to long form to help readers not to be confused. }
-=SML
-datatype Bool = F | T;
-fun negation T = F
- | negation F = T;
-fun exclusive_or (T,T) = F
- | exclusive_or (F,F) = F
- | exclusive_or (x,y) = T;
-fun disjunction(F,F) = F
- | disjunction(T,x) = T
- | disjunction(x,T) = T;
-fun conjunction(F,x) = F
- | conjunction(T,x) = x;
-=TEX
-\clearpage
-=TEX
-conjunction(p,q) is created first since it is most inner function. Then its negation and disjunction(p,q) are built simultaneously. Then both of their results are used for outer most function(conjunction) of the left hand side.\footnote{Explanation added.}\\
-For left hand side, "exclusive or" function is operated.\\
-=SML
-conjunction(disjunction(T,F),negation(conjunction(T,F)));
-exclusive_or(T,F);
 
-=TEX
-Since the result of the both functions are the same as True's, it is concluded that left hand side is equal to right hand side. (Below figure) \\
-\includegraphics[scale=0.6]{118.png}
-\clearpage
-
-=TEX
-\section*{Sample Code and its result by the professor.}
-=SML
-datatype Bool = F | T;
-fun conjunction (F,F) = F
- | conjunction (F,T) = F
- | conjunction (T,F) = F
- | conjunction (T,T) = T;
-val truth_values = [(F,F),(F,T),(T,F),(T,T)];
-map conjunction truth_values;
-
-=TEX
-Running above SML code produces this truth table:\footnote{Explanation added.}\\
-\includegraphics[scale= 0.6]{out1.png}
-=SML
-infix AND;
-fun p AND q = conjunction (p,q);
-T AND F;
-=TEX 
-\includegraphics[scale = 0.6]{out2.png}\\
-A new function is created using infix AND, thus making the code less confusing and easier to understand. This method is supposed to be used in problem 1.18\\
-\clearpage
-
-=TEX
-\section*{Review Questions}
-\begin{itemize}
-
-\item
-Problem 1.9 \\
-Question: Use De Morgan's laws to write the negation for the proposition: "The dollar is at an all-time high and the stock market is at a record low."\\
-Answer: The dollar is \textbf{not} at an all-time high \textbf{or} the stock market is \textbf{not} at a record low.\\
-Note: This is not the result of the negation: "The dollar is at an all-time \textbf{low} \textbf{or} the stock is at a record \textbf{high}."
-
-\noindent{ \color{red} \rule{\linewidth} {0.5mm} }
-
-\item
-Problem 1.10 \\
-Question: Assume $x \in \mathbb{R}$. Use De Morgan's laws to write the negation for the proposition: $-5 < x <= 0$.\footnote{Changed to correct symbols by adding delimiters. Explanation for DeMorgan's law added.} \\
-Answer:  $x \leq -5$ or $x > 0$ \\
-Note: Less than or equal sign is changed to the other side of the equation. Definition of DeMorgan's Law: "The negation of a conjunction is the disjunction of the negations. The negation of a disjunction is the conjunction of the negations." Ref: wikipedia. In this case, as we can see less-than-or-equal signs are changed on both side and "or" is added in between two ranges of values of possible value of x. 
-
-\noindent{ \color{red} \rule{\linewidth} {0.5mm} }
-\clearpage
-
-\item
-Problem 1.12
-Question: Show that the proposition $s = (p \land \sim q) \land (\sim p \lor q)$ is a contradiction. \footnote{Explanation added.} \\
-Answer: \textbf{Contradiction}: A compound proposition that has the value F for all possible values of the propositions in it. \\
-\input 112.tex \\
-\noindent{ \color{red} \rule{\linewidth} {0.5mm} }
-\clearpage
-
-
-\item
-Problem 1.13 (c)
-Question: Is $(p \oplus q) \land r \equiv (p \land r) \oplus (q \land r)$ ? Justify your answer. \\
-Answer:  As we can see the results of the fifth and eighth columns of the table are the same, it is concluded that left hand side is equal to right hand side. \\
-\input 113c.tex \\
-\noindent{ \color{red} \rule{\linewidth} {0.5mm} }
-\clearpage
-
-\item
-Problem 1.14 (c)
-Question:  $\sim t \equiv$ c and $\sim c \equiv t$, where t is a tautology and c is a contradiction. \\
-Answer: \footnote{Definitions added. Tables edited.}\\
-\textbf{Tautology}: A compound prosition which is always true, regardless of the truth values of the propositional variables which comprise it.\\
-\textbf{Contradiction}: A compound proposition that has the value F for all possible values of the propositions in it. \\
-\input 114c1.tex
-\input 114c2.tex\\
-\noindent{ \color{red} \rule{\linewidth} {0.5mm} }
-\clearpage
-
-\item
-Problem 1.14 (d) 
-Question: $p \lor p \equiv p$ and $p \land p \equiv p$ \\
-Answer:
-\input 114d1.tex  
-\input 114d2.tex \\
-\noindent{ \color{red} \rule{\linewidth} {0.5mm} }
-
-\item
-Problem 1.20 
-Question: Show that $\sim p \land (p \land q)$ is a contradiction. \\
-Answer: 
-\input 120.tex 
-\clearpage
-\end{itemize}
 \end{document}

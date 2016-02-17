@@ -1,0 +1,12 @@
+Poly/ML 5.5.2 Release
+val annual_fuel_consumed = fn: int * int * int -> int
+val ppg = 3: int
+val mpy = 15000: int
+val mpg = 45: int
+val fuel = 1000: int
+val years = 10: int
+val operating_cost = fn: int -> int
+val cost = 10000: int
+val pp = 25000: int
+val total_cost = fn: int -> int
+val total = 35000: int
