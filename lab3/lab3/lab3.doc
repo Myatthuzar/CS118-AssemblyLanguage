@@ -112,7 +112,7 @@ The euclid function uses the same technique of creating a label to indicate star
 =MOREASM lab.s
 euclid:
 push %ebp
-mov $esp,%ebp
+mov %esp,%ebp
 =TEX
 Now we can access the 2 parameters using register EBP. 4 bytes above EBP is the return address, 8 is the 1st parm, and 12 is the second. i.e.
 \begin{description}
@@ -121,9 +121,24 @@ Now we can access the 2 parameters using register EBP. 4 bytes above EBP is the 
 \end{description}
 The if statement has to be simulated by branching to labels depending of results of doing the comparison of n to zero.
 =MOREASM lab.s
+mov 12(%ebp),%eax
+cmp $0,%eax
+jle else
 =TEX
 This is the ``then'' part of the if statement. We need to calculate $m \mod n$ and call euclid again!  Integer division is done by putting dividend in EDX:EAX as 64-bit value, and divisor in EBX. The remainder will be in EDX.
 =MOREASM lab3.s
+mov 12(%ebp), %ebx
+mov 8(%ebp), %eax
+mov $0, %edx # clear upper 32 bits of the 64-bit divident edx:eax
+idiv %ebx # modulus is in edx (quotient is in eax)
+push  %edx
+push %ebx
+call euclid
+add $8,%esp
+jmp endif
+else:
+mov 8(%ebp),%eax
+endif: 
 =TEX
 \clearpage
 These last 2 instructions undo the first 2--they restore the original stack as it was found on entry to the function.
