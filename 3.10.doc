@@ -1,0 +1,38 @@
+.data
+fmt: .string "hello\n"
+.text
+.global main
+main:
+    movl %esp, %ebp # for correct debugging
+    # write your code here
+    push $fmt
+    call printf
+    add $4, %esp # remove $fmt from stack
+    xorl $eax, $eax # 3 bytes, exclusive or the all the values giving zero in eax
+    mov $0,%eax # 5bytes
+    ret
+    
+    
+    
+
+
+GOAL:
+-SASM
+may need to reinstall VM
+after saving your existing debian.qcon and saving tgz files
+-linux system calls
+-do we need the C library?
+-continue studying stack frames
+-w/ recursion example gcd
+
+sudo apt-get install electric-fence
+sudo apt-get install valgrind
+sudo apt-get update
+sudo apt-get install sasm
+
+The default interpretation of a number is that it is an address to dereference it 
+push 2 # to dereference address 2
+push $2 # interprets 2 as an immediate mode value
+push $fmt
+
+
