@@ -1,0 +1,9 @@
+Poly/ML 5.5.2 Release
+val x = 2: int
+val y = 3: int
+val z = 4: int
+val w = 6: int
+val s = 5: int
+val r = 9: int
+val r = 14: int
+val r = 20: int

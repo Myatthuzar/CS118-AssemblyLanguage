@@ -1,6 +1,0 @@
-\contentsline {section}{gcd}{2}
-\contentsline {section}{gcd in sml}{3}
-\contentsline {section}{gcd in c}{4}
-\contentsline {subsection}{gcd in c: euclid function}{6}
-\contentsline {subsection}{gcd in asm: main}{7}
-\contentsline {subsection}{gcd in asm: euclid function}{10}

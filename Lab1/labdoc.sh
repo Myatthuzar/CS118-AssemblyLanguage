@@ -1,2 +1,3 @@
 doctex lab1.doc
-pptexenv pdflatex lab1.tex
+pptexenv /home/debian/texfot.pl pdflatex lab1.tex
+
