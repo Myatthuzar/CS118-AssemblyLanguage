@@ -6,8 +6,6 @@ int euclid(int m, int n)
 }
 int main()
 {
-  int gcd = euclid(558,198);
-  printf("%i\n",gcd);
+  printf("GCD output = %i\n",euclid(558,198));
   return 0;
 }
-

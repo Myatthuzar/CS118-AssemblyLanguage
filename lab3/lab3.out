@@ -1,0 +1,7 @@
+\BOOKMARK [1][-]{section*.1}{gcd}{}% 1
+\BOOKMARK [1][-]{section*.2}{gcd in sml}{}% 2
+\BOOKMARK [1][-]{section*.3}{SML code result}{}% 3
+\BOOKMARK [1][-]{section*.4}{gcd in c}{}% 4
+\BOOKMARK [2][-]{section*.5}{gcd in c: euclid function}{section*.4}% 5
+\BOOKMARK [2][-]{section*.6}{gcd in asm: main}{section*.4}% 6
+\BOOKMARK [2][-]{section*.7}{gcd in asm: euclid function}{section*.4}% 7
