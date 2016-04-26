@@ -5,4 +5,21 @@ Result returned in eax register: 1 if odd, 0 if even
 mask off all but 
 =MOREASM lab.s
 odd: 
-    mov 
+    mov 4(%esp), %eax
+    and $0x1, %eax
+
+=MOREASM lab.s
+
+    
+#test the odd function
+    push $24
+    call odd
+.data
+fmt2: .string "%i\n"
+ .text 
+    push %eax
+    push $fmt2
+    call printf
+    add $8, %esp
+    
+
