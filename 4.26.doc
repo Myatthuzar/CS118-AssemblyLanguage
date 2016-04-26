@@ -1,0 +1,8 @@
+=TEX
+\section*{odd}
+\verb|bool odd(int x) {return x % 2 ==1;}|
+Result returned in eax register: 1 if odd, 0 if even
+mask off all but 
+=MOREASM lab.s
+odd: 
+    mov 
