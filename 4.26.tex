@@ -21,6 +21,9 @@ elseif:
     add $4, %esp # eax is 1 if p is odd
     cmp $0, %eax
     je else
+    mov 8(%esp), %eax
+    dec %eax
+    push %eax # push p-1
 
 
 endif:
