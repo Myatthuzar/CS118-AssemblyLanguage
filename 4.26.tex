@@ -8,6 +8,26 @@ mask off all but
 odd: 
     mov 4(%esp), %eax
     and $0x1, %eax
+power:
+    push %ebp
+    mov %esp, %ebp
+    cmp $0,8(%ebp) #p 
+    jne elseif
+    fld1 #load 1.0 to ST(0)
+    jmp endif
+elseif:
+    push p
+    call odd
+    add $4, %esp # eax is 1 if p is odd
+    cmp $0, %eax
+    je else
+
+
+endif:
+
+    mov %ebp, %esp
+    pop %ebp
+    ret
 
 =MOREASM lab.s
 
@@ -17,12 +37,12 @@ odd:
     call odd
 .data
 fmt2: .string "%i\n"
- .text 
+.text 
     push %eax
     push $fmt2
     call printf
     add $8, %esp
-    
+ 
 
 
 =TEX
