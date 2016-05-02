@@ -1,0 +1,199 @@
+=TEX
+\documentclass{article}
+\usepackage{ProofPower,verbatim,graphicx,float}
+\usepackage{amsmath,amsfonts,fpic,color,pstricks,xcolor,pstricks-add}
+\usepackage{underscore,listings,hyperref}
+\usepackage[margin=0.5in,paperwidth=6in,paperheight=5in]{geometry}
+\title{gcd function in sml, C, and asm}
+\setcounter{secnumdepth}{0}
+\begin{document} 
+\author{Saw Thinkar Nay Htoo}
+\maketitle
+\clearpage
+
+=SML
+fun sqr x : real = x * x;
+fun odd x = x mod 2 = 1;
+fun power r p = if p = 0 then 1.0;
+		else if odd p then r * power r (p-1)
+		else sqr (power r (p div 2));
+power 2.0 9;
+
+=C lab4.c
+#include <stdio.h>
+typedef enum {false,true} bool;
+float sqr (float x) {return x * x;}
+bool odd(int x) {return x % 2 == 1;}
+float power (float r, int p)
+{
+	if (p == 0) return 1.0;
+	else if (odd(p)) return r * power (r,p-1);
+	else return sqr (power (r,p/2));
+}
+int main()
+{
+	printf("%f\n", power(2.0,9));
+}
+=TEX
+\includegraphics[scale = 0.5]{labc.png}
+\clearpage\section*{ASM}
+=ASM lab4.s
+.equ flase,0
+.equ true,1
+
+.data
+r: .float 2.0
+f: .float 0.0
+fmt: .string "%f\n"
+
+=TEX
+\clearpage\section*{Square}
+\verb|float sqr (float x) {return x * x;}|
+Expects x to be on the system stack, return $x^2$ in register ST(0).
+\begin{enumerate}
+\item load x into ST(0)
+\item load x into ST(1)
+\item multiply ST(1) times ST(0)
+
+\end{enumerate}
+=MOREASM lab4.s
+.text
+sqr:
+  flds 4(%esp)
+  flds 4(%esp)
+  fmul %ST(1),%ST(0)
+  ret
+=TEX
+
+\clearpage\section*{Odd}
+=MOREASM lab4.s
+odd:
+  ret
+=TEX
+
+\clearpage\section*{Power}
+=MOREASM lab4.s
+power:
+    push %ebp
+    mov %esp, %ebp
+    cmp $0,8(%ebp) #p 
+    jne elseif
+    fld1 #load 1.0 to ST(0)
+    jmp endif
+elseif:
+    push 12(%ebp)
+    call odd
+    add $4, %esp # eax is 1 if p is odd
+    cmp $0, %eax
+    je else
+
+	mov 12(%esp), %eax
+	dec %eax
+	push %eax # push p-1
+	push 8(%ebp) # result in st(0) 
+	call power
+	add $8, %esp
+
+	flds 12(%ebp) # r in st(0), power result now in st(1)
+	fmul %ST(1),%ST(0) # r in st(0) and return from power in st st(1)
+	jmp endif
+
+else:
+
+	mov 12(%ebp), %eax
+	shr %eax
+	push %eax	# push p/2
+	push 8(%ebp) # push r
+	call power # result in st(0)
+	add $8, %esp
+
+	fsts f
+	push f
+	call sqr
+	add $4, %esp
+
+endif:
+    mov %ebp, %esp
+    pop %ebp
+    ret
+
+=TEX
+\clearpage\section*{Main}
+=MOREASM lab4.s
+.globl _start
+
+_start:
+	push $9
+	push r
+	call power
+	add $8, %esp
+
+
+
+# to use printf for float – push 64-bit value instrad of 32
+	sub $8,%esp
+	fstpl (%esp) # store from st(0)
+	push $fmt
+	call printf
+	add $12, $esp # 1 32-bit param, 1 64-bit param = 12 bytes
+
+# test the odd function
+	push  
+	push %eax
+	push $fmt2
+	call printf
+	add $8, %esp
+
+#to try the square function
+	push r 
+	call sqr
+	add $4, %esp
+# to try printf – to push 64-bit value instead of 32
+	sub $8, %esp
+	fstpl (%esp)
+	push $fmt
+
+
+=TEX
+\clearpage\section*{}
+=MOREASM lab4.s
+#to try printf - to push 64-bit vlaue instead of 32
+		
+	sub $8, %esp
+	fstps (%esp)
+
+	push $fmt
+	call printf
+	add $12, %esp #1 32-bit param, 1 64-bit param = 12 bytes
+=TEX
+
+\clearpage\section*{Exit}
+=MOREASM lab4.s
+	mov $1,%eax
+	mov $0,%ebx
+	int $0x80
+=TEX
+\includegraphics[scale = 0.5]{labasm.png}
+\clearpage
+	
+=DUMP labcode.sh
+docsml lab4.doc
+as -gstabs -o lab.o lab4.s
+ld -dynamic-linker /lib/ld-linux.so.2 -o labasm lab.o -lc -lX11
+#gcc -Wall -g -o labc lab4.c
+
+=DUMP labcode2.sh
+gcc -Wall -o labc lab4.c
+gcc -Wall -o labasm lab4.s
+
+=DUMP labdoc.sh
+doctex lab4.doc
+pptexenv /home/debian/texfot.pl pdflatex lab4.tex
+
+=SH
+chmod 755 labcode2.sh
+chmod 755 labcode.sh
+chmod 755 labdoc.sh
+
+=TEX
+\end{document}
